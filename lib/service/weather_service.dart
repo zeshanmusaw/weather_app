@@ -1,34 +1,43 @@
 import 'dart:convert';
+import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
 
-class WeatherService {
-  final String apiKey = 'dad524f767154937965110921242509';
+import 'location_service.dart';
 
-  Future<Map<String, dynamic>> fetchCurrentWeather(
-      double lat, double lon) async {
-    final response = await http.get(
-      Uri.parse(
-          'https://api.openweathermap.org/data/2.5/weather?lat=$lat&lon=$lon&appid=$apiKey&units=metric'),
-    );
+class WeatherService {
+  final String apiKey = '7cb90217e3544d65875130728242509';
+
+
+// Function to fetch weather data
+  Future<Map<String, dynamic>> fetchWeatherData() async {
+    // Get the user's current location (latitude and longitude)
+    Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+    // Build the API URL with the location and API key
+   final url = 'http://api.weatherapi.com/v1/forecast.json?key=$apiKey&q=${position.latitude},${position.longitude}&aqi=no&days=3';
+print("GET URL "+url);
+    final response = await http.get(Uri.parse(url));
 
     if (response.statusCode == 200) {
-      return jsonDecode(response.body);
+
+print("Testing"+response.body.toString());
+      return json.decode(response.body);
+
     } else {
       throw Exception('Failed to load weather data');
     }
   }
 
-  Future<Map<String, dynamic>> fetchWeatherForecast(
-      double lat, double lon) async {
-    final response = await http.get(
-      Uri.parse(
-          'https://api.openweathermap.org/data/2.5/forecast?lat=$lat&lon=$lon&appid=$apiKey&units=metric'),
-    );
+// get
+  Future<Map<String, dynamic>> getWeatherData(String location) async {
+    final url = Uri.parse('http://api.weatherapi.com/v1/forecast.json?key=$apiKey&q=$location&days=3');
+
+    final response = await http.get(url);
 
     if (response.statusCode == 200) {
-      return jsonDecode(response.body);
+      print('sussesee');
+      return json.decode(response.body);
     } else {
-      throw Exception('Failed to load forecast data');
+      throw Exception('Failed to fetch weather data');
     }
   }
 
